@@ -388,7 +388,7 @@
                             <label>Down Payment / Advance</label>
                             <div class="input-group">
                                 <input type="text" id="downPaymentAmt" value="1,000,000" placeholder="Amount" inputmode="numeric" oninput="formatThousand(this); syncDownPayment('amt'); calculateLease();" required>
-                                <input type="number" id="downPaymentPct" value="20.00" placeholder="%" step="0.01" inputmode="decimal" oninput="syncDownPayment('pct'); calculateLease();" required>
+                                <input type="number" id="downPaymentPct" value="30.00" placeholder="%" step="0.01" inputmode="decimal" oninput="syncDownPayment('pct'); calculateLease();" required>
                             </div>
                         </div>
 
@@ -628,12 +628,12 @@
             if (charge.isDropdown) {
                 labelContent = `
                     <select id="charge_${charge.id}_select" onchange="updateRmvAmount()" style="font-weight: 600; color: var(--primary-color); border: none; padding: 0; background-color: transparent; width: auto; background-image: none; margin-bottom: 4px;">
-                        <option value="9,500">RMV (RO to RO)</option>
-                        <option value="1,570">RMV (Transfer)</option>
+                        <option value="9,210">RMV (RO to RO)</option>
+                        <option value="11,510">RMV (Transfer)</option>
                         <option value="0">None / Other</option>
                     </select>
                 `;
-                amtContent = `<input type="text" id="charge_${charge.id}_amt" value="9,500" inputmode="numeric" oninput="formatThousand(this); calculateLease()">`;
+                amtContent = `<input type="text" id="charge_${charge.id}_amt" value="9,210" inputmode="numeric" oninput="formatThousand(this); calculateLease()">`;
             } else {
                 labelContent = `<div class="charge-label">${charge.name}</div>`;
                 let readonly = charge.isAutoCalc ? 'readonly style="background-color: #e2e8f0; color: #64748b;"' : '';
