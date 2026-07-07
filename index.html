@@ -1,17 +1,48 @@
-<!DOCTYPE html>
+import pandas as pd
+import json
+
+# Read the CSV file and clean up YOM
+records = []
+try:
+    df = pd.read_csv('make.csv')
+    df.columns = df.columns.str.strip()
+    
+    for index, row in df.iterrows():
+        try:
+            val_str = str(row['Value']).replace(',', '').strip()
+            # Clean up YOM (e.g. "2018.0" -> "2018")
+            yom_raw = str(row['Yom']).strip()
+            if yom_raw.endswith('.0'):
+                yom_raw = yom_raw[:-2]
+                
+            records.append({
+                "type": str(row['Vehicle Type']).strip(),
+                "make": str(row['Make']).strip(),
+                "model": str(row['Modual']).strip(),
+                "yom": yom_raw,
+                "value": float(val_str) if val_str else 0
+            })
+        except Exception as e:
+            continue
+            
+    db_json = json.dumps(records)
+except Exception as e:
+    print(f"Error: {e}")
+    db_json = "[]"
+
+html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Advanced Rental & Lease Calculator V7.1 (PWA)</title>
+    <title>Advanced Rental & Lease Calculator V7.2 (PWA)</title>
     
-    <!-- PWA Meta Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
-        :root {
+        :root {{
             --primary-color: #4f46e5;
             --primary-hover: #4338ca;
             --background-color: #f1f5f9;
@@ -25,68 +56,68 @@
             --purple-color: #8b5cf6;
             --teal-color: #14b8a6;
             --rose-color: #f43f5e;
-        }
+        }}
 
-        * {
+        * {{
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        }}
 
-        html, body {
+        html, body {{
             width: 100%;
             overflow-x: hidden;
             background-color: var(--background-color);
             color: var(--text-main);
             font-size: 16px;
-        }
+        }}
 
-        .main-wrapper {
+        .main-wrapper {{
             padding: 15px 10px;
             width: 100%;
             max-width: 100vw;
             overflow-x: hidden;
-        }
+        }}
 
-        .container {
+        .container {{
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
-        }
+        }}
 
-        header {
+        header {{
             text-align: center;
             margin-bottom: 25px;
             padding-top: 10px;
-        }
+        }}
 
-        header h1 {
+        header h1 {{
             color: var(--primary-color);
             font-size: 1.8rem;
             margin-bottom: 8px;
             line-height: 1.2;
-        }
+        }}
 
-        header p {
+        header p {{
             color: var(--text-muted);
             font-size: 0.95rem;
-        }
+        }}
 
-        .calculator-grid {
+        .calculator-grid {{
             display: grid;
             grid-template-columns: minmax(0, 1fr);
             gap: 15px;
             width: 100%;
-        }
+        }}
 
-        @media (min-width: 992px) {
-            .calculator-grid {
+        @media (min-width: 992px) {{
+            .calculator-grid {{
                 grid-template-columns: 320px minmax(0, 1fr);
-            }
-        }
+            }}
+        }}
 
-        .card {
+        .card {{
             background: var(--card-background);
             border-radius: 12px;
             padding: 15px;
@@ -95,9 +126,9 @@
             margin-bottom: 15px;
             width: 100%;
             min-width: 0;
-        }
+        }}
 
-        .card h2 {
+        .card h2 {{
             font-size: 1.2rem;
             margin-bottom: 18px;
             color: var(--text-main);
@@ -106,22 +137,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
+        }}
 
-        .form-group {
+        .form-group {{
             margin-bottom: 15px;
             width: 100%;
-        }
+        }}
 
-        .form-group label {
+        .form-group label {{
             display: block;
             font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 6px;
             color: var(--text-main);
-        }
+        }}
 
-        .form-group input, .form-group select {
+        .form-group input, .form-group select {{
             width: 100%;
             min-width: 0;
             padding: 10px 12px;
@@ -132,31 +163,31 @@
             background-color: #fff;
             -webkit-appearance: none;
             appearance: none;
-        }
+        }}
         
-        select {
+        select {{
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%234f46e5%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
             background-position: right 10px top 50%;
             background-size: 12px auto;
-        }
+        }}
 
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus, .form-group select:focus {{
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
+        }}
 
-        .input-group {
+        .input-group {{
             display: flex;
             gap: 10px;
             width: 100%;
-        }
+        }}
 
-        .input-group input:first-child { flex: 2; min-width: 0; }
-        .input-group input:last-child { flex: 1; min-width: 0; }
+        .input-group input:first-child {{ flex: 2; min-width: 0; }}
+        .input-group input:last-child {{ flex: 1; min-width: 0; }}
 
-        .btn-small {
+        .btn-small {{
             padding: 4px 8px;
             font-size: 0.8rem;
             background-color: #f1f5f9;
@@ -164,36 +195,36 @@
             border: 1px solid var(--primary-color);
             border-radius: 4px;
             cursor: pointer;
-        }
+        }}
 
-        .vehicle-db-section {
+        .vehicle-db-section {{
             background-color: #f8fafc;
             border: 1px dashed var(--border-color);
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 15px;
-        }
+        }}
 
-        .vehicle-db-section h3 {
+        .vehicle-db-section h3 {{
             font-size: 0.95rem;
             color: var(--primary-color);
             margin-bottom: 10px;
-        }
+        }}
 
-        .two-col {
+        .two-col {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-        }
+        }}
 
-        .charges-container {
+        .charges-container {{
             display: flex;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-        }
+        }}
 
-        .charge-row {
+        .charge-row {{
             background: #f8fafc;
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -203,28 +234,28 @@
             gap: 8px;
             width: 100%;
             box-sizing: border-box;
-        }
+        }}
 
-        .charge-label {
+        .charge-label {{
             font-weight: 600;
             font-size: 0.95rem;
             color: var(--primary-color);
             margin-bottom: 4px;
-        }
+        }}
 
-        .charge-inputs {
+        .charge-inputs {{
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             width: 100%;
-        }
+        }}
 
-        .charge-inputs > div {
+        .charge-inputs > div {{
             min-width: 0;
             width: 100%;
-        }
+        }}
 
-        .charge-inputs input, .charge-inputs select {
+        .charge-inputs input, .charge-inputs select {{
             width: 100%;
             min-width: 0;
             padding: 8px 10px;
@@ -232,22 +263,22 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             background-color: #fff;
-        }
+        }}
 
-        .results-summary {
+        .results-summary {{
             display: grid;
             grid-template-columns: repeat(2, 1fr); 
             gap: 12px;
             width: 100%;
-        }
+        }}
 
-        @media (min-width: 600px) {
-            .results-summary {
+        @media (min-width: 600px) {{
+            .results-summary {{
                 grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            }
-        }
+            }}
+        }}
 
-        .result-box {
+        .result-box {{
             background: var(--background-color);
             padding: 12px 10px;
             border-radius: 8px;
@@ -257,31 +288,31 @@
             justify-content: center;
             min-width: 0;
             overflow: hidden;
-        }
+        }}
 
-        .result-box.success { border-left-color: var(--success-color); }
-        .result-box.warning { border-left-color: var(--warning-color); }
-        .result-box.info { border-left-color: var(--info-color); }
-        .result-box.purple { border-left-color: var(--purple-color); }
-        .result-box.teal { border-left-color: var(--teal-color); }
-        .result-box.rose { border-left-color: var(--rose-color); }
+        .result-box.success {{ border-left-color: var(--success-color); }}
+        .result-box.warning {{ border-left-color: var(--warning-color); }}
+        .result-box.info {{ border-left-color: var(--info-color); }}
+        .result-box.purple {{ border-left-color: var(--purple-color); }}
+        .result-box.teal {{ border-left-color: var(--teal-color); }}
+        .result-box.rose {{ border-left-color: var(--rose-color); }}
 
-        .result-box .label {
+        .result-box .label {{
             font-size: 0.75rem;
             color: var(--text-muted);
             margin-bottom: 4px;
             font-weight: 700;
             line-height: 1.2;
-        }
+        }}
 
-        .result-box .value {
+        .result-box .value {{
             font-size: 1.05rem; 
             font-weight: 700;
             color: var(--text-main);
             word-wrap: break-word;
-        }
+        }}
 
-        .table-responsive {
+        .table-responsive {{
             width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -291,36 +322,36 @@
             border-radius: 8px;
             background: #fff;
             display: block; 
-        }
+        }}
 
-        .amortization-table {
+        .amortization-table {{
             width: 100%;
             border-collapse: collapse;
             text-align: left;
             font-size: 0.85rem;
             min-width: 500px; 
-        }
+        }}
 
-        .amortization-table thead {
+        .amortization-table thead {{
             background-color: #f1f5f9;
             position: sticky;
             top: 0;
             z-index: 1;
-        }
+        }}
 
-        .amortization-table th, .amortization-table td {
+        .amortization-table th, .amortization-table td {{
             padding: 12px 10px;
             border-bottom: 1px solid var(--border-color);
             white-space: nowrap;
-        }
+        }}
 
-        .amortization-table tbody tr:hover {
+        .amortization-table tbody tr:hover {{
             background-color: #f8fafc;
-        }
+        }}
 
-        .text-right {
+        .text-right {{
             text-align: right;
-        }
+        }}
     </style>
 </head>
 <body>
@@ -333,19 +364,15 @@
         </header>
 
         <div class="calculator-grid">
-            <!-- Left Column: Inputs -->
             <div>
                 <div class="card">
                     <h2>
                         1. Core Inputs
-                        <!-- Hidden CSV uploader as data is now hardcoded -->
-                        <!-- <button class="btn-small" type="button" onclick="document.getElementById('csvUpload').click()">Load CSV File</button> -->
                         <input type="file" id="csvUpload" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
                     </h2>
                     
                     <form id="calcForm">
                         
-                        <!-- VEHICLE DB SECTION -->
                         <div class="vehicle-db-section" id="dbSection">
                             <h3>Auto-Fill from Database</h3>
                             
@@ -387,7 +414,7 @@
                         <div class="form-group">
                             <label>Down Payment / Advance</label>
                             <div class="input-group">
-                                <input type="text" id="downPaymentAmt" value="1,000,000" placeholder="Amount" inputmode="numeric" oninput="formatThousand(this); syncDownPayment('amt'); calculateLease();" required>
+                                <input type="text" id="downPaymentAmt" value="1,500,000" placeholder="Amount" inputmode="numeric" oninput="formatThousand(this); syncDownPayment('amt'); calculateLease();" required>
                                 <input type="number" id="downPaymentPct" value="30.00" placeholder="%" step="0.01" inputmode="decimal" oninput="syncDownPayment('pct'); calculateLease();" required>
                             </div>
                         </div>
@@ -396,13 +423,13 @@
                             <label for="rateType">Interest Rate Type</label>
                             <select id="rateType" onchange="calculateLease()">
                                 <option value="flat">Flat Rate (% p.a.)</option>
-                                <option value="irr">Effective / IRR Rate (% p.a.)</option>
+                                <option value="irr" selected>Effective / IRR Rate (% p.a.)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="interestRate">Interest Rate (% p.a.)</label>
-                            <input type="number" id="interestRate" value="12" step="0.01" inputmode="decimal" oninput="calculateLease()" required>
+                            <input type="number" id="interestRate" value="44" step="0.01" inputmode="decimal" oninput="calculateLease()" required>
                         </div>
 
                         <div class="form-group">
@@ -414,13 +441,11 @@
                 <div class="card">
                     <h2>2. Charges Breakdown</h2>
                     <div class="charges-container" id="chargesContainer">
-                        <!-- Generated in JS -->
-                    </div>
+                        </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Right Column: Results -->
             <div>
                 <div class="card">
                     <h2>Collection Type Summary</h2>
@@ -488,8 +513,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Generated by JS -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
@@ -500,7 +524,7 @@
 
 <script>
     // --- DATABASE & DROPDOWN LOGIC ---
-    let vehicleDatabase = [{"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 150", "yom": "2016.0", "value": 350000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 150", "yom": "2017.0", "value": 380000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 150", "yom": "2018.0", "value": 410000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 150", "yom": "2019.0", "value": 440000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 150", "yom": "2020.0", "value": 500000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 180", "yom": "2018.0", "value": 450000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 180", "yom": "2019.0", "value": 475000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "AVENGER STREET 180", "yom": "2020.0", "value": 510000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2013.0", "value": 235000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2014.0", "value": 255000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2015.0", "value": 275000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2016.0", "value": 295000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2017.0", "value": 315000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2018.0", "value": 335000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2019.0", "value": 355000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "BOXER 100", "yom": "2020.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2013.0", "value": 430000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2014.0", "value": 455000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2015.0", "value": 485000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2016.0", "value": 510000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2017.0", "value": 530000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2018.0", "value": 550000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2019.0", "value": 560000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2020.0", "value": 575000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2021.0", "value": 585000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2022.0", "value": 595000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2023.0", "value": 605000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2024.0", "value": 615000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2025.0", "value": 625000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "CT 100", "yom": "2026.0", "value": 630000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2013.0", "value": 275000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2014.0", "value": 300000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2015.0", "value": 320000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2016.0", "value": 340000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2017.0", "value": 360000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2018.0", "value": 380000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2019.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 100/110", "yom": "2020.0", "value": 420000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2013.0", "value": 475000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2014.0", "value": 500000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2015.0", "value": 525000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2016.0", "value": 550000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2017.0", "value": 600000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2018.0", "value": 620000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2019.0", "value": 640000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2020.0", "value": 660000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2021.0", "value": 670000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2022.0", "value": 685000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2023.0", "value": 700000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2024.0", "value": 715000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2025.0", "value": 725000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125 (DISK)", "yom": "2026.0", "value": 730000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2013.0", "value": 340000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2014.0", "value": 360000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2015.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2016.0", "value": 450000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2017.0", "value": 500000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2018.0", "value": 525000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2019.0", "value": 550000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 125(DRUM)", "yom": "2020.0", "value": 575000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 135", "yom": "2013.0", "value": 310000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 150", "yom": "2013.0", "value": 275000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 150", "yom": "2014.0", "value": 300000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 150", "yom": "2015.0", "value": 325000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 150", "yom": "2016.0", "value": 350000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 150", "yom": "2017.0", "value": 375000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "DISCOVER 150", "yom": "2018.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2013.0", "value": 350000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2014.0", "value": 375000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2015.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2016.0", "value": 425000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2017.0", "value": 450000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2018.0", "value": 470000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2019.0", "value": 490000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 100", "yom": "2020.0", "value": 500000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2013.0", "value": 250000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2014.0", "value": 275000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2015.0", "value": 325000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2016.0", "value": 350000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2017.0", "value": 375000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2018.0", "value": 425000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2019.0", "value": 450000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PLATINA 125", "yom": "2020.0", "value": 475000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2013.0", "value": 240000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2014.0", "value": 255000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2015.0", "value": 270000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2016.0", "value": 285000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2017.0", "value": 305000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2018.0", "value": 320000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2019.0", "value": 350000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 135", "yom": "2020.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 AS", "yom": "2013.0", "value": 300000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 AS", "yom": "2014.0", "value": 350000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 AS", "yom": "2015.0", "value": 380000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 AS", "yom": "2016.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 AS", "yom": "2017.0", "value": 425000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 AS", "yom": "2018.0", "value": 450000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 AS", "yom": "2019.0", "value": 480000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2013.0", "value": 340000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2014.0", "value": 370000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2015.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2016.0", "value": 430000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2017.0", "value": 460000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2018.0", "value": 490000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2019.0", "value": 550000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 NS", "yom": "2020.0", "value": 600000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGDD", "yom": "2018.0", "value": 700000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGDD", "yom": "2019.0", "value": 725000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGDD", "yom": "2020.0", "value": 750000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2013.0", "value": 495000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2014.0", "value": 535000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2015.0", "value": 575000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2016.0", "value": 625000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2017.0", "value": 675000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2018.0", "value": 685000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2019.0", "value": 715000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 150 UGSD", "yom": "2020.0", "value": 735000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 160/160NS", "yom": "2015.0", "value": 425000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 160/160NS", "yom": "2016.0", "value": 470000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 160/160NS", "yom": "2017.0", "value": 510000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 160/160NS", "yom": "2018.0", "value": 540000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 160/160NS", "yom": "2019.0", "value": 580000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180DD", "yom": "2017.0", "value": 650000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180DD", "yom": "2018.0", "value": 675000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180DD", "yom": "2019.0", "value": 685000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180DD", "yom": "2020.0", "value": 700000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2013.0", "value": 400000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2014.0", "value": 430000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2015.0", "value": 490000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2016.0", "value": 520000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2017.0", "value": 550000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2018.0", "value": 585000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2019.0", "value": 620000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 180SD", "yom": "2020.0", "value": 650000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2013.0", "value": 450000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2014.0", "value": 500000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2015.0", "value": 525000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2016.0", "value": 600000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2017.0", "value": 625000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2018.0", "value": 675000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2019.0", "value": 725000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2020.0", "value": 775000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2025.0", "value": 1050000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 NS", "yom": "2026.0", "value": 1100000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 RS", "yom": "2015.0", "value": 550000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 RS", "yom": "2016.0", "value": 600000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 RS", "yom": "2017.0", "value": 700000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 RS", "yom": "2018.0", "value": 800000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 RS", "yom": "2019.0", "value": 900000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 200 RS", "yom": "2020.0", "value": 1000000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR 220 (150 UG FACE", "yom": "2013.0", "value": 325000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR N 125", "yom": "2025.0", "value": 800000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR N 125", "yom": "2026.0", "value": 810000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR N 160", "yom": "2024.0", "value": 850000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR N 160", "yom": "2025.0", "value": 875000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR N 160", "yom": "2026.0", "value": 900000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR N 160 PREMIUM", "yom": "2025.0", "value": 900000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "PULSAR N 160 PREMIUM", "yom": "2026.0", "value": 950000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "V12", "yom": "2016.0", "value": 275000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "V12", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "V12", "yom": "2018.0", "value": 325000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "V15", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "V15", "yom": "2016.0", "value": 275000.0}, {"type": "Motorcycles", "make": "BAJAJ", "model": "V15", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HAOJUE", "model": "GN 125H", "yom": "2019.0", "value": 425000.0}, {"type": "Motorcycles", "make": "HAOJUE", "model": "GN 125H", "yom": "2020.0", "value": 450000.0}, {"type": "Motorcycles", "make": "HAOJUE", "model": "GN 125H", "yom": "2023.0", "value": 475000.0}, {"type": "Motorcycles", "make": "HAOJUE", "model": "GN 125H", "yom": "2024.0", "value": 500000.0}, {"type": "Motorcycles", "make": "HAOJUE", "model": "GN 125H", "yom": "2025.0", "value": 515000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ EXTREME SD", "yom": "2013.0", "value": 240000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ EXTREME SD", "yom": "2014.0", "value": 255000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ EXTREME SD", "yom": "2015.0", "value": 270000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ EXTREME SD", "yom": "2016.0", "value": 285000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ EXTREME SD", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ EXTREME SD", "yom": "2018.0", "value": 315000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ EXTREME SD", "yom": "2019.0", "value": 330000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ/ EXTREME DD", "yom": "2013.0", "value": 260000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ/ EXTREME DD", "yom": "2014.0", "value": 280000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ/ EXTREME DD", "yom": "2015.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ/ EXTREME DD", "yom": "2016.0", "value": 320000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ/ EXTREME DD", "yom": "2017.0", "value": 340000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ/ EXTREME DD", "yom": "2018.0", "value": 360000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CBZ/ EXTREME DD", "yom": "2019.0", "value": 380000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CD DAWN", "yom": "2013.0", "value": 220000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CD DAWN", "yom": "2014.0", "value": 235000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CD DAWN", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CD DELUXE", "yom": "2013.0", "value": 170000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CD DELUXE", "yom": "2014.0", "value": 185000.0}, {"type": "Motorcycles", "make": "HERO", "model": "CD DELUXE", "yom": "2015.0", "value": 200000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DASH", "yom": "2015.0", "value": 225000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DASH", "yom": "2016.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DASH", "yom": "2017.0", "value": 275000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DASH", "yom": "2018.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DASH", "yom": "2019.0", "value": 325000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DAWN 100/125 CC", "yom": "2013.0", "value": 220000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DAWN 100/125 CC", "yom": "2014.0", "value": 235000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DAWN 100/125 CC", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DAWN 100/125 CC", "yom": "2016.0", "value": 265000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DAWN 100/125 CC", "yom": "2017.0", "value": 280000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DAWN 100/125 CC", "yom": "2018.0", "value": 295000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2013.0", "value": 225000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2014.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2015.0", "value": 275000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2016.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2017.0", "value": 320000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2018.0", "value": 360000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2019.0", "value": 380000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2020.0", "value": 400000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2025.0", "value": 500000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DELUX", "yom": "2026.0", "value": 550000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DESTINI", "yom": "2019.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DUET", "yom": "2015.0", "value": 200000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DUET", "yom": "2016.0", "value": 220000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DUET", "yom": "2017.0", "value": 240000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DUET", "yom": "2018.0", "value": 260000.0}, {"type": "Motorcycles", "make": "HERO", "model": "DUET", "yom": "2019.0", "value": 280000.0}, {"type": "Motorcycles", "make": "HERO", "model": "GLAMOUR 125CC", "yom": "2013.0", "value": 220000.0}, {"type": "Motorcycles", "make": "HERO", "model": "GLAMOUR 125CC", "yom": "2014.0", "value": 240000.0}, {"type": "Motorcycles", "make": "HERO", "model": "GLAMOUR 125CC", "yom": "2015.0", "value": 260000.0}, {"type": "Motorcycles", "make": "HERO", "model": "GLAMOUR 125CC", "yom": "2016.0", "value": 280000.0}, {"type": "Motorcycles", "make": "HERO", "model": "GLAMOUR 125CC", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HERO", "model": "GLAMOUR 125CC", "yom": "2018.0", "value": 320000.0}, {"type": "Motorcycles", "make": "HERO", "model": "GLAMOUR 125CC", "yom": "2019.0", "value": 340000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2013.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2014.0", "value": 375000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2015.0", "value": 400000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2016.0", "value": 425000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2017.0", "value": 450000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2018.0", "value": 475000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2019.0", "value": 500000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCDD", "yom": "2020.0", "value": 550000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2013.0", "value": 375000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2014.0", "value": 400000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2015.0", "value": 425000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2016.0", "value": 450000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2017.0", "value": 475000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2018.0", "value": 500000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2019.0", "value": 550000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 150CCSD", "yom": "2020.0", "value": 600000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 160R", "yom": "2025.0", "value": 850000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 160R", "yom": "2026.0", "value": 900000.0}, {"type": "Motorcycles", "make": "HERO", "model": "HUNK 200CCC", "yom": "2019.0", "value": 500000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2013.0", "value": 175000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2014.0", "value": 195000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2015.0", "value": 215000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2016.0", "value": 235000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2017.0", "value": 255000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2018.0", "value": 275000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2019.0", "value": 295000.0}, {"type": "Motorcycles", "make": "HERO", "model": "ISMART 110", "yom": "2020.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HERO", "model": "KARIZMA/R/ZMR", "yom": "2013.0", "value": 240000.0}, {"type": "Motorcycles", "make": "HERO", "model": "KARIZMA/R/ZMR", "yom": "2014.0", "value": 255000.0}, {"type": "Motorcycles", "make": "HERO", "model": "KARIZMA/R/ZMR", "yom": "2015.0", "value": 270000.0}, {"type": "Motorcycles", "make": "HERO", "model": "KARIZMA/R/ZMR", "yom": "2016.0", "value": 285000.0}, {"type": "Motorcycles", "make": "HERO", "model": "KARIZMA/R/ZMR", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HERO", "model": "KARIZMA/R/ZMR", "yom": "2018.0", "value": 315000.0}, {"type": "Motorcycles", "make": "HERO", "model": "MAESTRO EDGE", "yom": "2017.0", "value": 360000.0}, {"type": "Motorcycles", "make": "HERO", "model": "MAESTRO EDGE", "yom": "2018.0", "value": 380000.0}, {"type": "Motorcycles", "make": "HERO", "model": "MAESTRO EDGE", "yom": "2019.0", "value": 415000.0}, {"type": "Motorcycles", "make": "HERO", "model": "MAESTRO EDGE", "yom": "2020.0", "value": 435000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PASSIONPRO DRUM/DISK", "yom": "2013.0", "value": 220000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PASSIONPRO DRUM/DISK", "yom": "2014.0", "value": 235000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PASSIONPRO DRUM/DISK", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PASSIONPRO DRUM/DISK", "yom": "2016.0", "value": 265000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PASSIONPRO DRUM/DISK", "yom": "2017.0", "value": 280000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PASSIONPRO DRUM/DISK", "yom": "2018.0", "value": 295000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PASSIONPRO DRUM/DISK", "yom": "2019.0", "value": 310000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2013.0", "value": 295000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2014.0", "value": 325000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2015.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2016.0", "value": 375000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2017.0", "value": 405000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2018.0", "value": 430000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2019.0", "value": 455000.0}, {"type": "Motorcycles", "make": "HERO", "model": "PLEASURE 100/110 CC", "yom": "2020.0", "value": 485000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR NXG", "yom": "2013.0", "value": 175000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR NXG", "yom": "2014.0", "value": 190000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR NXG", "yom": "2015.0", "value": 205000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR PRO", "yom": "2013.0", "value": 160000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR PRO", "yom": "2014.0", "value": 180000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR PRO", "yom": "2015.0", "value": 200000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR PRO", "yom": "2016.0", "value": 220000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR PRO", "yom": "2017.0", "value": 240000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR PRO", "yom": "2018.0", "value": 260000.0}, {"type": "Motorcycles", "make": "HERO", "model": "SPLENDOR PRO", "yom": "2019.0", "value": 280000.0}, {"type": "Motorcycles", "make": "HERO", "model": "XOOM 110", "yom": "2025.0", "value": 625000.0}, {"type": "Motorcycles", "make": "HERO", "model": "XOOM 110", "yom": "2026.0", "value": 650000.0}, {"type": "Motorcycles", "make": "HERO", "model": "XOOM125R", "yom": "2026.0", "value": 820000.0}, {"type": "Motorcycles", "make": "HERO", "model": "X-TREME R 125", "yom": "2025.0", "value": 700000.0}, {"type": "Motorcycles", "make": "HERO", "model": "X-TREME R 125", "yom": "2026.0", "value": 750000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2013.0", "value": 255000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2014.0", "value": 285000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2015.0", "value": 340000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2016.0", "value": 370000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2017.0", "value": 400000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2018.0", "value": 430000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2019.0", "value": 460000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "ACTIVA/ ACTIVA I", "yom": "2020.0", "value": 525000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "AVIATOR", "yom": "2018.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "AVIATOR", "yom": "2019.0", "value": 395000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "AVIATOR", "yom": "2020.0", "value": 450000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160R SD/ CB 160X", "yom": "2016.0", "value": 625000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160R SD/ CB 160X", "yom": "2017.0", "value": 650000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160R SD/ CB 160X", "yom": "2018.0", "value": 675000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160R SD/ CB 160X", "yom": "2019.0", "value": 700000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160R SD/ CB 160X", "yom": "2020.0", "value": 725000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160RDD", "yom": "2016.0", "value": 650000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160RDD", "yom": "2017.0", "value": 675000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160RDD", "yom": "2018.0", "value": 700000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160RDD", "yom": "2019.0", "value": 725000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB HORNET 160RDD", "yom": "2020.0", "value": 750000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB SHINE", "yom": "2013.0", "value": 225000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB SHINE", "yom": "2014.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB SHINE", "yom": "2015.0", "value": 275000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB SHINE", "yom": "2016.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB SHINE", "yom": "2017.0", "value": 325000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB SHINE", "yom": "2018.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB SHINE", "yom": "2019.0", "value": 375000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TRIGGER DD", "yom": "2014.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TRIGGER DD", "yom": "2015.0", "value": 325000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TRIGGER DD", "yom": "2016.0", "value": 375000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TWISTER 110CC", "yom": "2013.0", "value": 200000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TWISTER 110CC", "yom": "2014.0", "value": 225000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TWISTER 110CC", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TWISTER 110CC", "yom": "2016.0", "value": 275000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TWISTER 110CC", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TWISTER 110CC", "yom": "2018.0", "value": 325000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB TWISTER 110CC", "yom": "2019.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB UNICORN 160", "yom": "2013.0", "value": 240000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB UNICORN 160", "yom": "2014.0", "value": 270000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB UNICORN 160", "yom": "2015.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB UNICORN 160", "yom": "2016.0", "value": 330000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB UNICORN 160", "yom": "2017.0", "value": 360000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB UNICORN 160", "yom": "2018.0", "value": 390000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CB UNICORN 160", "yom": "2019.0", "value": 420000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CBR 250R INDIAN", "yom": "2013.0", "value": 400000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CBR 250R INDIAN", "yom": "2014.0", "value": 440000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CBR 250R INDIAN", "yom": "2015.0", "value": 480000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CBR 250R INDIAN", "yom": "2016.0", "value": 520000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CBR 250R INDIAN", "yom": "2017.0", "value": 560000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CBR 250R INDIAN", "yom": "2018.0", "value": 600000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CBR 250R INDIAN", "yom": "2019.0", "value": 640000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CD DREAM", "yom": "2013.0", "value": 200000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CD DREAM", "yom": "2014.0", "value": 225000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CD DREAM", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CD DREAM", "yom": "2016.0", "value": 275000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CD DREAM", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CD DREAM", "yom": "2018.0", "value": 325000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "CD DREAM", "yom": "2019.0", "value": 350000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2013.0", "value": 450000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2014.0", "value": 475000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2015.0", "value": 500000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2016.0", "value": 550000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2017.0", "value": 600000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2018.0", "value": 630000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2019.0", "value": 645000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2020.0", "value": 660000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2025.0", "value": 670000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC", "yom": "2026.0", "value": 675000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC (DIG.METER)", "yom": "2018.0", "value": 660000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC (DIG.METER)", "yom": "2019.0", "value": 685000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC (DIG.METER)", "yom": "2020.0", "value": 700000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC (DIG.METER)", "yom": "2025.0", "value": 715000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 110CC (DIG.METER)", "yom": "2026.0", "value": 725000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 125CC (DISK/SMART)", "yom": "2026.0", "value": 825000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "DIO 125CC( STD)", "yom": "2026.0", "value": 770000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "GRAZIA", "yom": "2018.0", "value": 600000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "GRAZIA", "yom": "2019.0", "value": 625000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "GRAZIA", "yom": "2020.0", "value": 650000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "GRAZIA DX", "yom": "2018.0", "value": 620000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "GRAZIA DX", "yom": "2019.0", "value": 640000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "GRAZIA DX", "yom": "2020.0", "value": 660000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "NAVI", "yom": "2016.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "NAVI", "yom": "2017.0", "value": 275000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "NAVI", "yom": "2018.0", "value": 300000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "NAVI", "yom": "2019.0", "value": 325000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "NAVI", "yom": "2020.0", "value": 400000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "STUNNER", "yom": "2013.0", "value": 210000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "STUNNER", "yom": "2014.0", "value": 230000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "STUNNER", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "STUNNER", "yom": "2016.0", "value": 270000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "STUNNER", "yom": "2017.0", "value": 290000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "STUNNER", "yom": "2018.0", "value": 310000.0}, {"type": "Motorcycles", "make": "HONDA", "model": "STUNNER", "yom": "2019.0", "value": 330000.0}, {"type": "Motorcycles", "make": "KTM", "model": "DUKE 125", "yom": "2018.0", "value": 675000.0}, {"type": "Motorcycles", "make": "KTM", "model": "DUKE 125", "yom": "2019.0", "value": 700000.0}, {"type": "Motorcycles", "make": "KTM", "model": "DUKE 125", "yom": "2020.0", "value": 725000.0}, {"type": "Motorcycles", "make": "KTM", "model": "DUKE200", "yom": "2018.0", "value": 700000.0}, {"type": "Motorcycles", "make": "KTM", "model": "DUKE200", "yom": "2019.0", "value": 750000.0}, {"type": "Motorcycles", "make": "KTM", "model": "DUKE200", "yom": "2020.0", "value": 800000.0}, {"type": "Motorcycles", "make": "KTM", "model": "RC 125", "yom": "2018.0", "value": 675000.0}, {"type": "Motorcycles", "make": "KTM", "model": "RC 125", "yom": "2019.0", "value": 700000.0}, {"type": "Motorcycles", "make": "KTM", "model": "RC 125", "yom": "2020.0", "value": 725000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "BURGMAN", "yom": "2018.0", "value": 750000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "BURGMAN", "yom": "2019.0", "value": 775000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "BURGMAN", "yom": "2020.0", "value": 800000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GIXXER", "yom": "2016.0", "value": 425000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GIXXER", "yom": "2017.0", "value": 450000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GIXXER", "yom": "2018.0", "value": 475000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GIXXER", "yom": "2019.0", "value": 500000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GIXXER", "yom": "2020.0", "value": 525000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GIXXERSPECIAL ED", "yom": "2019.0", "value": 600000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GIXXERSPECIAL ED", "yom": "2020.0", "value": 650000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GN 125H", "yom": "2013.0", "value": 425000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GN 125H", "yom": "2014.0", "value": 450000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GN 125H", "yom": "2015.0", "value": 480000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GN 125H", "yom": "2016.0", "value": 510000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GN 125H", "yom": "2017.0", "value": 550000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "GN 125H", "yom": "2018.0", "value": 575000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "INTRUDER", "yom": "2018.0", "value": 500000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "INTRUDER", "yom": "2019.0", "value": 525000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "LETS", "yom": "2015.0", "value": 200000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "LETS", "yom": "2016.0", "value": 220000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "LETS", "yom": "2017.0", "value": 240000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "LETS", "yom": "2018.0", "value": 260000.0}, {"type": "Motorcycles", "make": "SUZUKI", "model": "LETS", "yom": "2019.0", "value": 280000.0}, {"type": "Motorcycles", "make": "TADEA", "model": "T9", "yom": "2024.0", "value": 400000.0}, {"type": "Motorcycles", "make": "TADEA", "model": "T9", "yom": "2025.0", "value": 450000.0}, {"type": "Motorcycles", "make": "TADEA", "model": "T9", "yom": "2026.0", "value": 500000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 150", "yom": "2013.0", "value": 280000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 150", "yom": "2014.0", "value": 315000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 150", "yom": "2015.0", "value": 350000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 150", "yom": "2016.0", "value": 385000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 150", "yom": "2017.0", "value": 420000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 150", "yom": "2018.0", "value": 455000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2013.0", "value": 390000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2014.0", "value": 425000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2015.0", "value": 460000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2016.0", "value": 495000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2017.0", "value": 530000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2018.0", "value": 565000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2019.0", "value": 600000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 160", "yom": "2020.0", "value": 625000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 180", "yom": "2013.0", "value": 315000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 180", "yom": "2014.0", "value": 350000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 180", "yom": "2015.0", "value": 385000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 180", "yom": "2016.0", "value": 420000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 180", "yom": "2017.0", "value": 455000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 180", "yom": "2018.0", "value": 490000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 200", "yom": "2016.0", "value": 470000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 200", "yom": "2017.0", "value": 500000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 200", "yom": "2018.0", "value": 540000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 200", "yom": "2019.0", "value": 550000.0}, {"type": "Motorcycles", "make": "TVS", "model": "APACHIE RTR 310", "yom": "2018.0", "value": 575000.0}, {"type": "Motorcycles", "make": "TVS", "model": "JUPITER", "yom": "2014.0", "value": 175000.0}, {"type": "Motorcycles", "make": "TVS", "model": "JUPITER", "yom": "2015.0", "value": 210000.0}, {"type": "Motorcycles", "make": "TVS", "model": "JUPITER", "yom": "2016.0", "value": 245000.0}, {"type": "Motorcycles", "make": "TVS", "model": "JUPITER", "yom": "2017.0", "value": 280000.0}, {"type": "Motorcycles", "make": "TVS", "model": "JUPITER", "yom": "2025.0", "value": 600000.0}, {"type": "Motorcycles", "make": "TVS", "model": "METRO 100CC", "yom": "2013.0", "value": 200000.0}, {"type": "Motorcycles", "make": "TVS", "model": "METRO 100CC", "yom": "2014.0", "value": 225000.0}, {"type": "Motorcycles", "make": "TVS", "model": "METRO 100CC", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "TVS", "model": "METRO 100CC", "yom": "2016.0", "value": 275000.0}, {"type": "Motorcycles", "make": "TVS", "model": "METRO 100CC", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "TVS", "model": "METRO 100CC", "yom": "2018.0", "value": 325000.0}, {"type": "Motorcycles", "make": "TVS", "model": "METRO 100CC", "yom": "2019.0", "value": 350000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ", "yom": "2018.0", "value": 565000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ", "yom": "2019.0", "value": 580000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ", "yom": "2020.0", "value": 595000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ", "yom": "2023.0", "value": 690000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ", "yom": "2024.0", "value": 690000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ", "yom": "2025.0", "value": 690000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ", "yom": "2026.0", "value": 700000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2018.0", "value": 600000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2019.0", "value": 625000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2020.0", "value": 650000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2021.0", "value": 675000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2022.0", "value": 700000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2023.0", "value": 740000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2024.0", "value": 765000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2025.0", "value": 775000.0}, {"type": "Motorcycles", "make": "TVS", "model": "NTORQ SPORT", "yom": "2026.0", "value": 780000.0}, {"type": "Motorcycles", "make": "TVS", "model": "RAIDER", "yom": "2024.0", "value": 650000.0}, {"type": "Motorcycles", "make": "TVS", "model": "RAIDER", "yom": "2025.0", "value": 675000.0}, {"type": "Motorcycles", "make": "TVS", "model": "RAIDER", "yom": "2026.0", "value": 700000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2013.0", "value": 200000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2014.0", "value": 225000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2015.0", "value": 250000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2016.0", "value": 275000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2017.0", "value": 300000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2018.0", "value": 325000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2019.0", "value": 350000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY PEPT/PLUS/STREAK", "yom": "2020.0", "value": 425000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY ZEST/110", "yom": "2013.0", "value": 170000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY ZEST/110", "yom": "2014.0", "value": 185000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY ZEST/110", "yom": "2015.0", "value": 220000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY ZEST/110", "yom": "2016.0", "value": 235000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY ZEST/110", "yom": "2017.0", "value": 250000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY ZEST/110", "yom": "2018.0", "value": 265000.0}, {"type": "Motorcycles", "make": "TVS", "model": "SCOOTY ZEST/110", "yom": "2019.0", "value": 280000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STAR SPORT", "yom": "2013.0", "value": 175000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STAR SPORT", "yom": "2014.0", "value": 200000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STAR SPORT", "yom": "2015.0", "value": 225000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STAR SPORT 125", "yom": "2013.0", "value": 170000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STRYKER", "yom": "2013.0", "value": 225000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STRYKER", "yom": "2014.0", "value": 250000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STRYKER", "yom": "2015.0", "value": 275000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STRYKER", "yom": "2016.0", "value": 300000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STRYKER", "yom": "2017.0", "value": 325000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STRYKER", "yom": "2018.0", "value": 350000.0}, {"type": "Motorcycles", "make": "TVS", "model": "STRYKER", "yom": "2019.0", "value": 375000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2013.0", "value": 375000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2014.0", "value": 400000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2015.0", "value": 425000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2016.0", "value": 450000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2017.0", "value": 475000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2018.0", "value": 510000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2019.0", "value": 535000.0}, {"type": "Motorcycles", "make": "TVS", "model": "WEGO 110", "yom": "2020.0", "value": 560000.0}, {"type": "Motorcycles", "make": "TVS", "model": "XL 100", "yom": "2025.0", "value": 375000.0}, {"type": "Motorcycles", "make": "TVS", "model": "XL 100", "yom": "2026.0", "value": 400000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "E8S / PRO", "yom": "2024.0", "value": 425000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "E8S / PRO", "yom": "2025.0", "value": 475000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "E8S / PRO", "yom": "2026.0", "value": 525000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "EPOC", "yom": "2024.0", "value": 425000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "EPOC", "yom": "2025.0", "value": 475000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "EPOC", "yom": "2026.0", "value": 525000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "EZEEGO", "yom": "2024.0", "value": 425000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "EZEEGO", "yom": "2025.0", "value": 475000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "EZEEGO", "yom": "2026.0", "value": 525000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "M6", "yom": "2024.0", "value": 300000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "M6", "yom": "2025.0", "value": 325000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "M6", "yom": "2026.0", "value": 350000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "RUBIN", "yom": "2023.0", "value": 250000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "RUBIN", "yom": "2024.0", "value": 275000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "RUBIN", "yom": "2025.0", "value": 300000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "RUBIN", "yom": "2026.0", "value": 325000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "T5", "yom": "2024.0", "value": 325000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "T5", "yom": "2025.0", "value": 350000.0}, {"type": "Motorcycles", "make": "YADEA", "model": "T5", "yom": "2026.0", "value": 375000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "ALPHA", "yom": "2014.0", "value": 150000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "ALPHA", "yom": "2015.0", "value": 175000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "ALPHA", "yom": "2016.0", "value": 200000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "ALPHA", "yom": "2017.0", "value": 225000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "ALPHA", "yom": "2018.0", "value": 250000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "ALPHA", "yom": "2019.0", "value": 275000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FASCINO", "yom": "2016.0", "value": 200000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FASCINO", "yom": "2017.0", "value": 225000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FASCINO", "yom": "2018.0", "value": 250000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FASCINO", "yom": "2019.0", "value": 275000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FASCINO", "yom": "2020.0", "value": 300000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FAZER 150CC", "yom": "2013.0", "value": 340000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FAZER 150CC", "yom": "2014.0", "value": 370000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FAZER 150CC", "yom": "2015.0", "value": 400000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FAZER 150CC", "yom": "2016.0", "value": 430000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FAZER 150CC", "yom": "2017.0", "value": 460000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FAZER 150CC", "yom": "2018.0", "value": 490000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FAZER 150CC", "yom": "2019.0", "value": 520000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ 250", "yom": "2018.0", "value": 700000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ 250", "yom": "2019.0", "value": 750000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2015.0", "value": 765000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2016.0", "value": 815000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2017.0", "value": 865000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2018.0", "value": 890000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2019.0", "value": 920000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2020.0", "value": 940000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2025.0", "value": 1025000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 2.0/FZ-16/FZ-S", "yom": "2026.0", "value": 1050000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 3.0", "yom": "2018.0", "value": 915000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 3.0", "yom": "2019.0", "value": 940000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ VER 3.0", "yom": "2020.0", "value": 965000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-16 / VER 1.0", "yom": "2013.0", "value": 530000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-16 / VER 1.0", "yom": "2014.0", "value": 600000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-16 / VER 1.0", "yom": "2015.0", "value": 650000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-S /VER 1.0", "yom": "2013.0", "value": 530000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-S /VER 1.0", "yom": "2014.0", "value": 600000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-S /VER 1.0", "yom": "2015.0", "value": 650000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-S /VER 4.0", "yom": "2025.0", "value": 1150000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "FZ-S /VER 4.0", "yom": "2026.0", "value": 1175000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "MT 15", "yom": "2019.0", "value": 905000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "MT 15", "yom": "2020.0", "value": 980000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "MT 15", "yom": "2025.0", "value": 1375000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "MT 15", "yom": "2026.0", "value": 1425000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "N-MAX", "yom": "2020.0", "value": 825000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2015.0", "value": 850000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2016.0", "value": 900000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2017.0", "value": 975000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2018.0", "value": 1000000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2019.0", "value": 1050000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2020.0", "value": 1150000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2025.0", "value": 1500000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "R 15", "yom": "2026.0", "value": 1550000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY", "yom": "2013.0", "value": 250000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY", "yom": "2014.0", "value": 275000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY", "yom": "2015.0", "value": 300000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY", "yom": "2016.0", "value": 325000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2013.0", "value": 275000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2014.0", "value": 300000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2015.0", "value": 350000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2016.0", "value": 375000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2017.0", "value": 400000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2018.0", "value": 425000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2019.0", "value": 450000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY Z", "yom": "2020.0", "value": 475000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR DRUM", "yom": "2015.0", "value": 425000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR DRUM", "yom": "2016.0", "value": 450000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR DRUM", "yom": "2017.0", "value": 475000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR DRUM", "yom": "2018.0", "value": 515000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR DRUM", "yom": "2019.0", "value": 530000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR DRUM", "yom": "2020.0", "value": 550000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR RALLY D. METER/AW/DISC", "yom": "2018.0", "value": 550000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR RALLY D. METER/AW/DISC", "yom": "2019.0", "value": 575000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR RALLY D. METER/AW/DISC", "yom": "2020.0", "value": 600000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZR RALLY D. METER/AW/DISC", "yom": "2025.0", "value": 700000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZRDISC", "yom": "2016.0", "value": 475000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZRDISC", "yom": "2017.0", "value": 500000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZRDISC", "yom": "2018.0", "value": 525000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZRDISC", "yom": "2019.0", "value": 550000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZRDISC", "yom": "2020.0", "value": 575000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "RAY ZRDISC", "yom": "2025.0", "value": 680000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "SALUTO 125 CC/YC 125", "yom": "2016.0", "value": 250000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "SALUTO 125 CC/YC 125", "yom": "2017.0", "value": 275000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "SALUTO 125 CC/YC 125", "yom": "2018.0", "value": 300000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "SALUTO 125 CC/YC 125", "yom": "2019.0", "value": 325000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "SALUTO 125 CC/YC 125", "yom": "2020.0", "value": 350000.0}, {"type": "Motorcycles", "make": "YAMAHA", "model": "SZ", "yom": "2013.0", "value": 325000.0}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}, {"type": "nan", "make": "nan", "model": "nan", "yom": "nan", "value": NaN}]; // Embedded from the user's uploaded CSV
+    let vehicleDatabase = {db_json}; // Cleaned JSON data
 
     const domType = document.getElementById('dbType');
     const domMake = document.getElementById('dbMake');
@@ -508,232 +532,234 @@
     const domYom = document.getElementById('dbYom');
     const domAsset = document.getElementById('assetValue');
 
-    function getUnique(arr, key, filters = {}) {
-        let filtered = arr.filter(item => {
-            for (let f in filters) {
+    function getUnique(arr, key, filters = {{}}) {{
+        let filtered = arr.filter(item => {{
+            for (let f in filters) {{
                 if (item[f] !== filters[f]) return false;
-            }
+            }}
             return true;
-        });
+        }});
         return [...new Set(filtered.map(item => item[key]))].sort();
-    }
+    }}
 
-    function populateSelect(selectElement, items, defaultText) {
-        selectElement.innerHTML = `<option value="">${defaultText}</option>`;
-        items.forEach(item => {
-            selectElement.innerHTML += `<option value="${item}">${item}</option>`;
-        });
+    function populateSelect(selectElement, items, defaultText) {{
+        selectElement.innerHTML = `<option value="">${{defaultText}}</option>`;
+        items.forEach(item => {{
+            selectElement.innerHTML += `<option value="${{item}}">${{item}}</option>`;
+        }});
         selectElement.disabled = items.length === 0;
-    }
+    }}
 
-    function initDatabaseDropdowns() {
+    function initDatabaseDropdowns() {{
         const types = getUnique(vehicleDatabase, 'type');
         populateSelect(domType, types, "Select Type...");
         domMake.innerHTML = `<option value="">Select Make...</option>`; domMake.disabled = true;
         domModel.innerHTML = `<option value="">Select Model...</option>`; domModel.disabled = true;
         domYom.innerHTML = `<option value="">Select YOM...</option>`; domYom.disabled = true;
-    }
+    }}
 
-    window.updateMakes = function() {
+    window.updateMakes = function() {{
         const selectedType = domType.value;
-        if(!selectedType) { initDatabaseDropdowns(); return; }
-        const makes = getUnique(vehicleDatabase, 'make', { type: selectedType });
+        if(!selectedType) {{ initDatabaseDropdowns(); return; }}
+        const makes = getUnique(vehicleDatabase, 'make', {{ type: selectedType }});
         populateSelect(domMake, makes, "Select Make...");
         domModel.innerHTML = `<option value="">Select Model...</option>`; domModel.disabled = true;
         domYom.innerHTML = `<option value="">Select YOM...</option>`; domYom.disabled = true;
-    }
+    }}
 
-    window.updateModels = function() {
+    window.updateModels = function() {{
         const selectedType = domType.value;
         const selectedMake = domMake.value;
-        if(!selectedMake) { updateMakes(); return; }
-        const models = getUnique(vehicleDatabase, 'model', { type: selectedType, make: selectedMake });
+        if(!selectedMake) {{ updateMakes(); return; }}
+        const models = getUnique(vehicleDatabase, 'model', {{ type: selectedType, make: selectedMake }});
         populateSelect(domModel, models, "Select Model...");
         domYom.innerHTML = `<option value="">Select YOM...</option>`; domYom.disabled = true;
-    }
+    }}
 
-    window.updateYoms = function() {
+    window.updateYoms = function() {{
         const selectedType = domType.value;
         const selectedMake = domMake.value;
         const selectedModel = domModel.value;
-        if(!selectedModel) { updateModels(); return; }
-        const yoms = getUnique(vehicleDatabase, 'yom', { type: selectedType, make: selectedMake, model: selectedModel });
+        if(!selectedModel) {{ updateModels(); return; }}
+        const yoms = getUnique(vehicleDatabase, 'yom', {{ type: selectedType, make: selectedMake, model: selectedModel }});
         populateSelect(domYom, yoms, "Select YOM...");
-    }
+    }}
 
-    window.fetchValue = function() {
+    window.fetchValue = function() {{
         const t = domType.value; const mk = domMake.value; const md = domModel.value; const y = domYom.value;
         if(!y) return;
         const record = vehicleDatabase.find(item => item.type === t && item.make === mk && item.model === md && String(item.yom) === String(y));
-        if(record) {
-            domAsset.value = record.value.toLocaleString('en-US', {maximumFractionDigits: 2});
+        if(record) {{
+            domAsset.value = record.value.toLocaleString('en-US', {{maximumFractionDigits: 2}});
             syncDownPayment('asset');
             calculateLease();
-        }
-    }
+        }}
+    }}
 
-    window.clearDbSelection = function() {
+    window.clearDbSelection = function() {{
         domType.value = "";
         initDatabaseDropdowns();
-    }
+    }}
 
     // Initialize DB Dropdowns
     initDatabaseDropdowns();
 
 
     // --- CALCULATOR LOGIC ---
-    function getNumber(val) {
+    function getNumber(val) {{
         if (!val) return 0;
         return parseFloat(val.toString().replace(/,/g, '')) || 0;
-    }
+    }}
 
-    function formatThousand(input) {
+    function formatThousand(input) {{
         let cursorPostion = input.selectionStart;
         let originalLength = input.value.length;
         
         let val = input.value.replace(/[^0-9.]/g, '');
-        if(val) {
+        if(val) {{
             let parts = val.split('.');
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            parts[0] = parts[0].replace(/\B(?=(\d{{3}})+(?!\d))/g, ",");
             input.value = parts.join('.');
-        } else {
+        }} else {{
             input.value = '';
-        }
+        }}
 
         let newLength = input.value.length;
         cursorPostion = cursorPostion + (newLength - originalLength);
         input.setSelectionRange(cursorPostion, cursorPostion);
-    }
+    }}
 
+    // Updated Charge Defaults
     const charges = [
-        { id: 'service', name: 'Service Charges', defaultAmt: '0', defaultType: 'capitalize' },
-        { id: 'document', name: 'Document Charges', defaultAmt: '200,000', defaultType: 'deduct', isAutoCalc: true },
-        { id: 'placement', name: 'Business Placement', defaultAmt: '0', defaultType: 'capitalize' },
-        { id: 'valuation', name: 'Valuation', defaultAmt: '1,500', defaultType: 'receipt' },
-        { id: 'rmv', name: 'RMV Charges', isDropdown: true, defaultType: 'receipt' },
-        { id: 'insurance', name: 'Insurance', defaultAmt: '0', defaultType: 'capitalize' }
+        {{ id: 'service', name: 'Service Charges', defaultAmt: '0', defaultType: 'capitalize' }},
+        {{ id: 'document', name: 'Document Charges', defaultAmt: '200,000', defaultType: 'deduct', isAutoCalc: true }},
+        {{ id: 'placement', name: 'Business Placement', defaultAmt: '0', defaultType: 'capitalize' }},
+        {{ id: 'valuation', name: 'Valuation', defaultAmt: '1,500', defaultType: 'receipt' }},
+        {{ id: 'rmv', name: 'RMV Charges', isDropdown: true, defaultType: 'receipt' }},
+        {{ id: 'insurance', name: 'Insurance', defaultAmt: '0', defaultType: 'capitalize' }}
     ];
 
-    function initChargesTable() {
+    function initChargesTable() {{
         const container = document.getElementById('chargesContainer');
         container.innerHTML = ''; 
         
-        charges.forEach(charge => {
+        charges.forEach(charge => {{
             const chargeRow = document.createElement('div');
             chargeRow.className = 'charge-row';
             
             let labelContent = '';
             let amtContent = '';
 
-            if (charge.isDropdown) {
+            if (charge.isDropdown) {{
+                // Updated Options and Default to 9,210
                 labelContent = `
-                    <select id="charge_${charge.id}_select" onchange="updateRmvAmount()" style="font-weight: 600; color: var(--primary-color); border: none; padding: 0; background-color: transparent; width: auto; background-image: none; margin-bottom: 4px;">
+                    <select id="charge_${{charge.id}}_select" onchange="updateRmvAmount()" style="font-weight: 600; color: var(--primary-color); border: none; padding: 0; background-color: transparent; width: auto; background-image: none; margin-bottom: 4px;">
                         <option value="9,210">RMV (RO to RO)</option>
                         <option value="11,510">RMV (Transfer)</option>
                         <option value="0">None / Other</option>
                     </select>
                 `;
-                amtContent = `<input type="text" id="charge_${charge.id}_amt" value="9,210" inputmode="numeric" oninput="formatThousand(this); calculateLease()">`;
-            } else {
-                labelContent = `<div class="charge-label">${charge.name}</div>`;
+                amtContent = `<input type="text" id="charge_${{charge.id}}_amt" value="9,210" inputmode="numeric" oninput="formatThousand(this); calculateLease()">`;
+            }} else {{
+                labelContent = `<div class="charge-label">${{charge.name}}</div>`;
                 let readonly = charge.isAutoCalc ? 'readonly style="background-color: #e2e8f0; color: #64748b;"' : '';
-                amtContent = `<input type="text" id="charge_${charge.id}_amt" value="${charge.defaultAmt}" inputmode="numeric" oninput="formatThousand(this); calculateLease()" ${readonly}>`;
-            }
+                amtContent = `<input type="text" id="charge_${{charge.id}}_amt" value="${{charge.defaultAmt}}" inputmode="numeric" oninput="formatThousand(this); calculateLease()" ${{readonly}}>`;
+            }}
 
             chargeRow.innerHTML = `
-                ${labelContent}
+                ${{labelContent}}
                 <div class="charge-inputs">
                     <div>
                         <label style="font-size: 0.75rem; color: #64748b; margin-bottom: 2px; display: block;">Amount (LKR)</label>
-                        ${amtContent}
+                        ${{amtContent}}
                     </div>
                     <div>
                         <label style="font-size: 0.75rem; color: #64748b; margin-bottom: 2px; display: block;">Type</label>
-                        <select id="charge_${charge.id}_type" onchange="calculateLease()">
-                            <option value="capitalize" ${charge.defaultType === 'capitalize' ? 'selected' : ''}>Capitalize</option>
-                            <option value="deduct" ${charge.defaultType === 'deduct' ? 'selected' : ''}>Deduct</option>
-                            <option value="receipt" ${charge.defaultType === 'receipt' ? 'selected' : ''}>Receipt</option>
+                        <select id="charge_${{charge.id}}_type" onchange="calculateLease()">
+                            <option value="capitalize" ${{charge.defaultType === 'capitalize' ? 'selected' : ''}}>Capitalize</option>
+                            <option value="deduct" ${{charge.defaultType === 'deduct' ? 'selected' : ''}}>Deduct</option>
+                            <option value="receipt" ${{charge.defaultType === 'receipt' ? 'selected' : ''}}>Receipt</option>
                         </select>
                     </div>
                 </div>
             `;
             container.appendChild(chargeRow);
-        });
-    }
+        }});
+    }}
 
-    window.updateRmvAmount = function() {
+    window.updateRmvAmount = function() {{
         const selectBox = document.getElementById('charge_rmv_select');
         const amtBox = document.getElementById('charge_rmv_amt');
-        if(selectBox && amtBox) {
+        if(selectBox && amtBox) {{
             amtBox.value = selectBox.value;
             calculateLease();
-        }
-    }
+        }}
+    }}
 
     const dpAmtInput = document.getElementById('downPaymentAmt');
     const dpPctInput = document.getElementById('downPaymentPct');
 
-    function syncDownPayment(source) {
+    function syncDownPayment(source) {{
         const asset = getNumber(domAsset.value);
         if (asset === 0) return;
 
-        if (source === 'amt') {
+        if (source === 'amt') {{
             const amt = getNumber(dpAmtInput.value);
             dpPctInput.value = ((amt / asset) * 100).toFixed(2);
-        } else if (source === 'pct') {
+        }} else if (source === 'pct') {{
             const pct = parseFloat(dpPctInput.value) || 0;
-            dpAmtInput.value = (asset * (pct / 100)).toLocaleString('en-US', {maximumFractionDigits: 2});
-        } else if (source === 'asset') {
+            dpAmtInput.value = (asset * (pct / 100)).toLocaleString('en-US', {{maximumFractionDigits: 2}});
+        }} else if (source === 'asset') {{
             const pct = parseFloat(dpPctInput.value) || 0;
-            dpAmtInput.value = (asset * (pct / 100)).toLocaleString('en-US', {maximumFractionDigits: 2});
-        }
-    }
+            dpAmtInput.value = (asset * (pct / 100)).toLocaleString('en-US', {{maximumFractionDigits: 2}});
+        }}
+    }}
 
-    document.getElementById('calcForm').addEventListener('submit', function(e) {
+    document.getElementById('calcForm').addEventListener('submit', function(e) {{
         e.preventDefault();
         calculateLease();
-    });
+    }});
 
-    function formatCurrency(val) {
-        return new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val);
-    }
+    function formatCurrency(val) {{
+        return new Intl.NumberFormat('en-LK', {{ style: 'currency', currency: 'LKR' }}).format(val);
+    }}
 
-    function findMonthlyIRR(principal, rental, months) {
+    function findMonthlyIRR(principal, rental, months) {{
         let low = 0.0, high = 1.0, guess = 0.05, maxIterations = 100, tolerance = 0.00001;
-        for (let i = 0; i < maxIterations; i++) {
+        for (let i = 0; i < maxIterations; i++) {{
             let pv = 0;
             for (let t = 1; t <= months; t++) pv += rental / Math.pow(1 + guess, t);
             if (Math.abs(pv - principal) < tolerance) return guess;
             if (pv > principal) low = guess; else high = guess;
             guess = (low + high) / 2;
-        }
+        }}
         return guess;
-    }
+    }}
 
-    function calculateLease() {
+    function calculateLease() {{
         const assetValue = getNumber(domAsset.value);
         const downPayment = getNumber(document.getElementById('downPaymentAmt').value);
         
         const docChargeInput = document.getElementById('charge_document_amt');
-        if (docChargeInput) {
+        if (docChargeInput) {{
             const baseLoan = Math.max(0, assetValue - downPayment);
             const docChargeVal = baseLoan * 0.05;
-            docChargeInput.value = docChargeVal.toLocaleString('en-US', {maximumFractionDigits: 2});
-        }
+            docChargeInput.value = docChargeVal.toLocaleString('en-US', {{maximumFractionDigits: 2}});
+        }}
 
         let totalCapitalized = 0;
         let totalDeducted = 0;
         let totalReceipt = 0;
 
-        charges.forEach(charge => {
-            let amtInput = document.getElementById(`charge_${charge.id}_amt`);
+        charges.forEach(charge => {{
+            let amtInput = document.getElementById(`charge_${{charge.id}}_amt`);
             let amt = amtInput ? getNumber(amtInput.value) : 0;
-            let type = document.getElementById(`charge_${charge.id}_type`).value;
+            let type = document.getElementById(`charge_${{charge.id}}_type`).value;
             
             if (type === 'capitalize') totalCapitalized += amt;
             else if (type === 'deduct') totalDeducted += amt;
             else if (type === 'receipt') totalReceipt += amt;
-        });
+        }});
 
         document.getElementById('sumCapitalize').innerText = formatCurrency(totalCapitalized);
         document.getElementById('sumDeduct').innerText = formatCurrency(totalDeducted);
@@ -753,24 +779,24 @@
         
         let monthlyRental = 0, flatRatePa = 0, irrRatePa = 0, monthlyRate = 0;
 
-        if (rateType === 'flat') {
+        if (rateType === 'flat') {{
             flatRatePa = interestRate;
             const totalInterest = netPrincipal * (flatRatePa / 100) * (term / 12);
             monthlyRental = (netPrincipal + totalInterest) / term;
             let monthlyIrr = findMonthlyIRR(netPrincipal, monthlyRental, term);
             irrRatePa = monthlyIrr * 12 * 100;
             monthlyRate = monthlyIrr;
-        } else {
+        }} else {{
             irrRatePa = interestRate;
             monthlyRate = (irrRatePa / 100) / 12;
-            if(monthlyRate > 0) {
+            if(monthlyRate > 0) {{
                 monthlyRental = netPrincipal * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1);
-            } else {
+            }} else {{
                 monthlyRental = netPrincipal / term;
-            }
+            }}
             const totalInterest = (monthlyRental * term) - netPrincipal;
             flatRatePa = (totalInterest / netPrincipal) / (term / 12) * 100;
-        }
+        }}
 
         const ltv = assetValue > 0 ? (netPrincipal / assetValue) * 100 : 0;
 
@@ -784,31 +810,31 @@
         tbody.innerHTML = '';
         let currentBalance = netPrincipal;
 
-        for (let m = 1; m <= term; m++) {
+        for (let m = 1; m <= term; m++) {{
             let interestComponent = currentBalance * monthlyRate;
             let principalComponent = monthlyRental - interestComponent;
             let openingBalance = currentBalance;
             let closingBalance = currentBalance - principalComponent;
 
-            if (m === term) {
+            if (m === term) {{
                 principalComponent = openingBalance;
                 monthlyRental = interestComponent + principalComponent;
                 closingBalance = 0;
-            }
+            }}
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${m}</td>
-                <td class="text-right">${formatCurrency(openingBalance)}</td>
-                <td class="text-right">${formatCurrency(monthlyRental)}</td>
-                <td class="text-right">${formatCurrency(interestComponent)}</td>
-                <td class="text-right">${formatCurrency(principalComponent)}</td>
-                <td class="text-right">${formatCurrency(closingBalance)}</td>
+                <td>${{m}}</td>
+                <td class="text-right">${{formatCurrency(openingBalance)}}</td>
+                <td class="text-right">${{formatCurrency(monthlyRental)}}</td>
+                <td class="text-right">${{formatCurrency(interestComponent)}}</td>
+                <td class="text-right">${{formatCurrency(principalComponent)}}</td>
+                <td class="text-right">${{formatCurrency(closingBalance)}}</td>
             `;
             tbody.appendChild(row);
             currentBalance = closingBalance;
-        }
-    }
+        }}
+    }}
 
     initChargesTable();
     syncDownPayment('amt');
@@ -816,18 +842,24 @@
 </script>
 
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) {{
+    window.addEventListener('load', () => {{
       navigator.serviceWorker.register('./sw.js')
-        .then(registration => {
+        .then(registration => {{
           console.log('ServiceWorker registration successful');
-        })
-        .catch(err => {
+        }})
+        .catch(err => {{
           console.log('ServiceWorker registration failed: ', err);
-        });
-    });
-  }
+        }});
+    }});
+  }}
 </script>
 
 </body>
 </html>
+"""
+
+with open("index.html", "w") as f:
+    f.write(html_content)
+
+print("HTML re-generated successfully with requested defaults and YOM fix.")
